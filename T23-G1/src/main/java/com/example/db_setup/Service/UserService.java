@@ -13,18 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.db_setup.Authentication.AuthenticatedUser;
+import com.example.db_setup.Authentication.AuthenticatedUserRepository;
 import com.example.db_setup.OAuthUserGoogle;
 import com.example.db_setup.User;
 import com.example.db_setup.UserProfile;
 import com.example.db_setup.UserProfileRepository;
 import com.example.db_setup.UserRepository;
-import com.example.db_setup.Authentication.AuthenticatedUser;
-import com.example.db_setup.Authentication.AuthenticatedUserRepository;
-
-//import com.T8.social.temp.Authentication.AuthenticatedUser;
-//import com.T8.social.temp.Authentication.AuthenticatedUserRepository;
-//import com.T8.social.temp.User;
-//import com.T8.social.temp.UserRepository;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -42,6 +37,7 @@ public class UserService {
     private UserProfileRepository userProfileRepository;
 
     private UserProfile userProfile;
+    private NotificationService notificationService;
     // Stessa cosa di sopra
     @Autowired
     private AuthenticatedUserRepository authenticatedUserRepository;
@@ -188,6 +184,7 @@ public class UserService {
                 followUser.getUserProfile().getFollowerIds().add(autUserProfileId);
                 //userProfile.getFollowerIds().add(authUserProfile);
                 autUser.getUserProfile().getFollowingIds().add(followUserProfileId);
+                notificationService.saveNotification(userId, "Hai un nuovo Follower!", autUser.name+" "+autUser.surname+" ha iniziato a seguirti!");
             }
 
             //Salva le modifiche
@@ -199,59 +196,6 @@ public class UserService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error","Internal server error"));
         }
     }
-
-    /*
-    public List<User> getFollowers(String UserId){
-            Integer userIdInt = Integer.parseInt(UserId);
-
-            User user = userRepository.findById(userIdInt)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-            List<Integer> followerIds = user.getUserProfile().getFollowerIds();
-            List<User> followers = userRepository.findAllById(followerIds);
-            System.out.println(followers);
-
-            return followers;
-    }
-    */
-
-    /*
-    public List<User> getFollowers(String UserId) {
-        Integer userIdInt = Integer.parseInt(UserId);
-        User user = userRepository.findById(userIdInt)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        // Verifica che userProfile non sia null
-        if (user.getUserProfile() == null) {
-            System.out.println("UserProfile is null for user: " + user.getID());
-            return new ArrayList<>(); // Ritorna lista vuota invece di null
-        }
-
-        List<Integer> followerIds = user.getUserProfile().getFollowerIds();
-
-        // Verifica che followerIds non sia null
-        if (followerIds == null) {
-            System.out.println("FollowerIds is null for user: " + user.getID());
-            return new ArrayList<>();
-        }
-
-        // Verifica che followerIds non sia vuoto
-        if (followerIds.isEmpty()) {
-            System.out.println("No followers found for user: " + user.getID());
-            return new ArrayList<>();
-        }
-
-        // Debug print per vedere gli ID dei follower
-        System.out.println("Follower IDs: " + followerIds);
-
-        List<User> followers = userRepository.findAllById(followerIds);
-
-        // Debug print per vedere i follower trovati
-        System.out.println("Found followers: " + followers);
-
-        // Non ritornare mai null
-        return followers != null ? followers : new ArrayList<>();
-    } */
 
     public List<User> getFollowers(String UserId) {
         Integer userIdInt = Integer.parseInt(UserId);
